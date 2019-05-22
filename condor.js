@@ -8,7 +8,10 @@ const {
 } = require('fs');
 const path = require('path');
 const uuid = require('uuid/v4');
-const {execSync} = require('child_process');
+const util = require('util');
+const childProcess = require('child_process');
+const {execSync} = childProcess;
+const exec = util.promisify(childProcess.exec);
 const rimraf = require('rimraf');
 const AdamZip = require('adm-zip');
 const commandLineArgs = require('command-line-args');
@@ -87,11 +90,13 @@ function recursivelyNpmInstall(dir) {
   let files = readdirSync(dir, {withFileTypes: false})
     .filter(f => f !== 'node_modules');
 
-  files.forEach(f => {
-    if (f === 'package.json') {
-      execSync(`npm install`, {cwd: dir});
-    }
-  });
+  let packageJSON = files.find(f => f === 'package.json');
+  if (packageJSON) {
+    exec('npm install', {cwd: dir}).then(() =>
+      console.log(`npm install at ${dir}`)
+    );
+  }
+
   let dirs = files.filter(f => statSync(path.join(dir, f)).isDirectory());
   dirs.forEach(d => recursivelyNpmInstall(path.join(dir, d)));
 }
@@ -115,13 +120,16 @@ function extractEachZip(zips, assessmentName, sourceDir, destDir) {
       mkdirSync(studentDir);
       files.forEach(f =>
         renameSync(path.join(sourceDir, f), path.join(sourceDir, studentDir, f))
+
       )
     } else {
       let f = files[0];
       renameSync(path.join(sourceDir, f), path.join(sourceDir, studentDir))
     }
+    origFolders.add(studentDir);
     recursivelyNpmInstall(path.join(sourceDir, studentDir));
-    renameSync(path.join(sourceDir, studentDir), path.join(destDir, studentDir));
+    // TODO: once all the folders ahve been npm installed, move them
+    //renameSync(path.join(sourceDir, studentDir), path.join(destDir, studentDir));
   })
 
 }
@@ -139,5 +147,5 @@ scpFilesToDir(
 const zips = getAllZipFiles(tempDir.fullPath);
 extractEachZip(zips, assessment, tempDir.fullPath, pwd);
 
-
+// TODO: Delete the temp dir once everything is done and moved out.
 //deleteDir(tempDir.fullPath);
