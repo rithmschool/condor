@@ -118,6 +118,7 @@ function extractEachZip(zips, assessmentName, sourceDir, destDir) {
     }
     if (files.length !== 1) {
       mkdirSync(studentDir);
+      mkdirSync(path.join(sourceDir, studentDir));
       files.forEach(f =>
         renameSync(path.join(sourceDir, f), path.join(sourceDir, studentDir, f))
 
