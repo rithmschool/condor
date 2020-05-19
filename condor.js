@@ -19,6 +19,12 @@ const optionDefinitions = [
   { name: 'cohort', alias: 'c', type: String },
   { name: 'assessment', alias: 'a', type: String},
 ];
+let students = null;
+try {
+  students = require("./students");
+} catch(e) {
+  console.warn("no array of students found. Downloading assessments for all students. You can speficy your advisees by putting their names in an array in a students.js file. Example: const students = ['fname lname'];");
+}
 const commandLineOptions = commandLineArgs(optionDefinitions)
 
 const pwd = __dirname;
@@ -104,32 +110,35 @@ function recursivelyNpmInstall(dir) {
 function extractEachZip(zips, assessmentName, sourceDir, destDir) {
   let origFolders = new Set(readdirSync(sourceDir, {withFileTypes: false}));
   zips.forEach(z => {
-    z.zip.extractAllTo(sourceDir, true);
-    let files = readdirSync(sourceDir, {withFileTypes: false})
-    files
-      .filter(f => f.match(/^__MACOSX$/))
-      .forEach(d => deleteDir(path.join(sourceDir, d)));
-    files = readdirSync(sourceDir, {withFileTypes: false})
-      .filter(f => !origFolders.has(f));
     const [_, firstName, lastName, ...rest] = z.filename.split('-');
-    let studentDir = `${firstName}-${lastName}-${assessmentName}`;
-    if (existsSync(path.join(sourceDir, studentDir))) {
-      studentDir = `${studentDir}-${uuid()}`;
-    }
-    if (files.length !== 1) {
-      mkdirSync(path.join(sourceDir, studentDir));
-      files.forEach(f =>
-        renameSync(path.join(sourceDir, f), path.join(sourceDir, studentDir, f))
+    if (students && students.includes(`${firstName} ${lastName}`)) {
+      console.log("downloading", firstName)
+      z.zip.extractAllTo(sourceDir, true);
+      let files = readdirSync(sourceDir, {withFileTypes: false})
+      files
+        .filter(f => f.match(/^__MACOSX$/))
+        .forEach(d => deleteDir(path.join(sourceDir, d)));
+      files = readdirSync(sourceDir, {withFileTypes: false})
+        .filter(f => !origFolders.has(f));
+      let studentDir = `${firstName}-${lastName}-${assessmentName}`;
+      if (existsSync(path.join(sourceDir, studentDir))) {
+        studentDir = `${studentDir}-${uuid()}`;
+      }
+      if (files.length !== 1) {
+        mkdirSync(path.join(sourceDir, studentDir));
+        files.forEach(f =>
+          renameSync(path.join(sourceDir, f), path.join(sourceDir, studentDir, f))
 
-      )
-    } else {
-      let f = files[0];
-      renameSync(path.join(sourceDir, f), path.join(sourceDir, studentDir))
+        )
+      } else {
+        let f = files[0];
+        renameSync(path.join(sourceDir, f), path.join(sourceDir, studentDir))
+      }
+      origFolders.add(studentDir);
+      recursivelyNpmInstall(path.join(sourceDir, studentDir));
+      // TODO: once all the folders ahve been npm installed, move them
+      //renameSync(path.join(sourceDir, studentDir), path.join(destDir, studentDir));
     }
-    origFolders.add(studentDir);
-    recursivelyNpmInstall(path.join(sourceDir, studentDir));
-    // TODO: once all the folders ahve been npm installed, move them
-    //renameSync(path.join(sourceDir, studentDir), path.join(destDir, studentDir));
   })
 
 }
