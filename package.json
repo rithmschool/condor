@@ -12,6 +12,7 @@
   "dependencies": {
     "adm-zip": "^0.4.13",
     "command-line-args": "^5.1.1",
+    "prompt-sync": "^4.2.0",
     "rimraf": "^2.6.3",
     "uuid": "^3.3.2"
   }
