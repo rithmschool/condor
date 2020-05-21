@@ -1,3 +1,5 @@
+const prompt = require("prompt-sync")();
+
 /**
  * Validate the assessment id (e.g. web-dev-1)
  *
@@ -9,7 +11,7 @@ function getAssessment(commandLineAssessment) {
   if (!commandLineAssessment) {
     console.error(
       "The assessment was invalid or not set. " +
-        "Remember to add the --assessment flag or -a for short"
+        "Remember to add the --assessment flag or -a for short."
     );
     process.exit(1);
   }
@@ -32,7 +34,7 @@ function getCohort(commandLineCohort) {
   } else {
     val = prompt(
       "You do not have the RITHM_COHORT environment variable set. " +
-        "What is your cohort? (example: r11)"
+        "What is your cohort? (example: r11) "
     );
   }
 
@@ -41,7 +43,7 @@ function getCohort(commandLineCohort) {
   } else {
     console.error(
       "The rithm cohort was invalid or not set. " +
-        "Remember to set an environment variable like RITHM_COHORT=r11"
+        "Remember to set an environment variable like RITHM_COHORT=r11."
     );
     process.exit(1);
   }
