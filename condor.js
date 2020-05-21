@@ -15,6 +15,8 @@ const exec = util.promisify(childProcess.exec);
 const rimraf = require('rimraf');
 const AdamZip = require('adm-zip');
 const commandLineArgs = require('command-line-args');
+const { getAssessment, getCohort } = require("./src/command");
+
 const optionDefinitions = [
   { name: 'cohort', alias: 'c', type: String },
   { name: 'assessment', alias: 'a', type: String},
@@ -40,33 +42,6 @@ const serverName = "sis.rithmschool.com";
 
 function buildSubmissionsPath(basePathArray, cohort, assessmentName) {
   return `/${[...basePathArray, cohort, assessmentName].join('/')}/`;
-}
-
-// Check the process.env, the command line, then prompt
-function getCohort(commandLineCohort) {
-  let val;
-  if (commandLineCohort) {
-    val = commandLineCohort
-  } else if (process.env.RITHM_COHORT) {
-    val = process.env.RITHM_COHORT;
-  } else {
-    val = prompt("You do not have the RITHM_COHORT environment variable set. What is your cohort? (example: r11)");
-  }
-
-  if (val && val.match(/^r\d{1,2}$/g)) {
-    return val;
-  } else {
-    console.error("The rithm cohort was invalid or not set.  Remember to set an environment variable like RITHM_COHORT=r11");
-    process.exit(1)
-  }
-}
-
-function getAssessment(commandLineAssessment) {
-  if (!commandLineAssessment) {
-    console.error("The assessment was invalid or not set.  Remember to add the --assessment flag or -a for short");
-    process.exit(1)
-  }
-  return commandLineAssessment;
 }
 
 function createTmpDir(pwd) {
