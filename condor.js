@@ -16,6 +16,7 @@ const rimraf = require('rimraf');
 const AdamZip = require('adm-zip');
 const commandLineArgs = require('command-line-args');
 const { getAssessment, getCohort } = require("./src/command");
+const { createTmpDir } = require("./src/files");
 
 const optionDefinitions = [
   { name: 'cohort', alias: 'c', type: String },
@@ -42,13 +43,6 @@ const serverName = "sis.rithmschool.com";
 
 function buildSubmissionsPath(basePathArray, cohort, assessmentName) {
   return `/${[...basePathArray, cohort, assessmentName].join('/')}/`;
-}
-
-function createTmpDir(pwd) {
-  const tmpDir = `tmp-${uuid()}`;
-  const fullPath = path.join(pwd, tmpDir);
-  mkdirSync(fullPath);
-  return {fullPath, dirName: tmpDir};
 }
 
 const deleteDir = rimraf.sync;
