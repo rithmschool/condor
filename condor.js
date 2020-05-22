@@ -3,20 +3,19 @@ const {
   statSync,
   existsSync,
   mkdirSync,
-  readFileSync,
   renameSync
 } = require('fs');
 const path = require('path');
 const uuid = require('uuid/v4');
 const util = require('util');
 const childProcess = require('child_process');
-const {execSync} = childProcess;
 const exec = util.promisify(childProcess.exec);
 const rimraf = require('rimraf');
 const AdamZip = require('adm-zip');
 const commandLineArgs = require('command-line-args');
 const { getAssessment, getCohort } = require("./src/command");
 const { createTmpDir } = require("./src/files");
+const { buildSubmissionsPath, scpZipFilesToDir } = require("./src/server");
 
 const optionDefinitions = [
   { name: 'cohort', alias: 'c', type: String },
@@ -41,16 +40,7 @@ const submissionsBasePath = [
 const scpUserName = "ubuntu";
 const serverName = "sis.rithmschool.com";
 
-function buildSubmissionsPath(basePathArray, cohort, assessmentName) {
-  return `/${[...basePathArray, cohort, assessmentName].join('/')}/`;
-}
-
 const deleteDir = rimraf.sync;
-
-function scpFilesToDir(userName, serverName, remotePath, localpath) {
-  let command = `scp ${userName}@${serverName}:${remotePath}*.zip ${localpath}/`;
-  return execSync(command);
-}
 
 function getAllZipFiles(dir) {
   return readdirSync(dir, {withFileTypes: false})
@@ -115,7 +105,7 @@ function extractEachZip(zips, assessmentName, sourceDir, destDir) {
 const tempDir = createTmpDir(pwd);
 const cohort = getCohort(commandLineOptions.cohort);
 const assessment = getAssessment(commandLineOptions.assessment);
-scpFilesToDir(
+scpZipFilesToDir(
   scpUserName,
   serverName,
   buildSubmissionsPath(submissionsBasePath, cohort, assessment),
