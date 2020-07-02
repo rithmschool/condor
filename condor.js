@@ -7,9 +7,13 @@ const { buildSubmissionsPath, scpZipFilesToDir } = require("./src/server");
 let students = null;
 try {
   students = require("./students");
+  if (!Array.isArray(students)) {
+    students = null;
+    throw "invalid student array";
+  }
 } catch (e) {
   console.warn(
-    "no array of students found. Downloading assessments for all students. You can speficy your advisees by putting their names in an array in a students.js file. Example: const students = ['fname lname'];"
+    "\n\nWARNING: No array of students found. Downloading assessments for all students.\nYou can speficy your advisees by putting their names in an array in a students.js file.\nExample:\nmodule.exports = ['fname lname'];\n\n"
   );
 }
 
