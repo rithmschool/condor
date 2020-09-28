@@ -6,7 +6,6 @@ const {
   statSync
 } = require("fs");
 const path = require("path");
-const uuid = require("uuid/v4");
 const util = require("util");
 const childProcess = require("child_process");
 const rimraf = require("rimraf");
@@ -17,9 +16,11 @@ const exec = util.promisify(childProcess.exec);
  * Create a directory to store downloaded assessments
  *
  * @param {String} pwd - where to create the directory
+ * @param {String} cohort - current cohort (e.g. r16)
+ * @param {String} assessment - current assessment (e.g. web-dev-1)
  */
-function createTmpDir(pwd) {
-  const dirName = `tmp-${uuid()}`;
+function createTmpDir(pwd, cohort, assessment) {
+  const dirName = `tmp-${cohort}-${assessment}`;
   const fullPath = path.join(pwd, dirName);
   mkdirSync(fullPath);
   return { fullPath, dirName };
@@ -59,10 +60,9 @@ function extractEachZip(zips, assessmentName, sourceDir, destDir, students) {
       console.log("downloading", firstName);
       z.zip.extractAllTo(sourceDir, true);
       let files = _getNewlyUnzippedFiles(sourceDir, origFolders);
-      let studentDir = `${firstName}-${lastName}-${assessmentName}`;
-      if (existsSync(path.join(sourceDir, studentDir))) {
-        studentDir = `${studentDir}-${uuid()}`;
-      }
+      // get timestamp, ignoring year at beginning and ".zip" extension at end
+      let time = rest.slice(1).join("-").slice(0, -4);
+      let studentDir = `${firstName}-${lastName}-${time}`;
       _moveAll(files, sourceDir, studentDir);
       origFolders.add(studentDir);
       _recursivelyNpmInstall(path.join(sourceDir, studentDir));
