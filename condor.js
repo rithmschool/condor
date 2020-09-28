@@ -28,9 +28,9 @@ const submissionsBasePath = ["home", "ubuntu", "sis", "media", "submissions"];
 const scpUserName = "ubuntu";
 const serverName = "sis.rithmschool.com";
 
-const tempDir = createTmpDir(pwd);
 const cohort = getCohort(commandLineOptions.cohort);
 const assessment = getAssessment(commandLineOptions.assessment);
+const tempDir = createTmpDir(pwd, cohort, assessment);
 scpZipFilesToDir(
   scpUserName,
   serverName,
